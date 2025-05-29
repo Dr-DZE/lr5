@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -62,6 +63,24 @@ public class MealController {
         }
         String message = mealService.createMeal(mealName);
         return ResponseEntity.status(HttpStatus.CREATED).body(message);
+    }
+
+    @Operation(summary = "Создать несколько блюд")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Блюда успешно созданы"),
+            @ApiResponse(responseCode = "400", description = "Некорректные данные блюд", ref = "#/components/responses/BadRequest")
+    })
+    @PostMapping("/bulk-create")
+    public ResponseEntity<List<String>> bulkCreateMeals(
+            @Parameter(description = "Список названий блюд для создания", required = true) @RequestBody List<String> mealNames) {
+        if (mealNames == null || mealNames.isEmpty()) {
+            throw new BadRequestException("Список 'mealNames' не может быть пустым.");
+        }
+        if (mealNames.stream().anyMatch(name -> name == null || name.trim().isEmpty())) {
+            throw new BadRequestException("Названия блюд не могут быть пустыми.");
+        }
+        List<String> results = mealService.bulkCreateMeals(mealNames);
+        return ResponseEntity.status(HttpStatus.CREATED).body(results);
     }
 
     @Operation(summary = "Получить блюдо по ID")

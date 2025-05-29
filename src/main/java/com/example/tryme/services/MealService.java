@@ -1,6 +1,7 @@
 package com.example.tryme.services;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
@@ -34,6 +35,17 @@ public class MealService {
         Meal meal = new Meal(mealName); 
         mealRepository.save(meal);
         return "Meal '" + mealName + "' created with ID: " + meal.getId();
+    }
+
+    public List<String> bulkCreateMeals(List<String> mealNames) {
+        cacheService.clearCache("meals");
+        List<Meal> meals = mealNames.stream()
+                .map(Meal::new)
+                .collect(Collectors.toList());
+        mealRepository.saveAll(meals);
+        return meals.stream()
+                .map(meal -> "Meal '" + meal.getName() + "' created with ID: " + meal.getId())
+                .collect(Collectors.toList());
     }
 
     public Meal getMeal(Long id) {
